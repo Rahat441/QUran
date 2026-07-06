@@ -57,7 +57,10 @@ quran-ra ask "What does the Quran say about mercy?"
 quran-ra chat
 ```
 
-`ask` performs semantic retrieval, lexical reranking, and then sends only the retrieved verses plus strict grounding instructions to Ollama. If retrieval is weak, the application returns the configured insufficient-evidence response instead of asking the model to guess.
+`ask` performs semantic retrieval and lexical reranking, then asks Ollama for structured claims
+based only on the retrieved verses. Citations are checked against the retrieved references, while
+Arabic and translation evidence is rendered directly from stored verse data. Invalid model output
+fails closed with the insufficient-evidence response.
 
 ## Architecture
 

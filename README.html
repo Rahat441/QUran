@@ -617,9 +617,14 @@
           <div class="flow-node"><strong>SearchResult list</strong><small>Verse, total score, semantic score, lexical score</small></div>
         </div>
         <div class="flow-row">
-          <div class="flow-node"><strong>generation.py</strong><small>Builds an evidence-only prompt</small></div>
+          <div class="flow-node"><strong>generation.py</strong><small>Requests schema-constrained claims</small></div>
           <div class="flow-arrow">→</div>
-          <div class="flow-node"><strong>qwen2.5:7b</strong><small>Produces the formatted explanation locally</small></div>
+          <div class="flow-node"><strong>qwen2.5:7b</strong><small>Returns claims, citations, and primary references locally</small></div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-node"><strong>Citation validator</strong><small>Allows only retrieved surah:ayah references</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><strong>Deterministic renderer</strong><small>Prints exact stored Arabic and translation text</small></div>
         </div>
       </div>
       <div class="callout">
@@ -665,8 +670,8 @@
           <p>Requests semantic candidates from Chroma, measures English/Arabic token overlap, combines both scores, and returns the configured top results.</p>
         </article>
         <article class="module-card">
-          <code>generation.py</code><h3>Evidence prompt and LLM call</h3>
-          <p>Serializes retrieved citations, Arabic, translations, and scores; adds strict evidence-only instructions; then requests a zero-temperature Ollama answer.</p>
+          <code>generation.py</code><h3>Validated grounded generation</h3>
+          <p>Requests schema-constrained claims, rejects malformed output and unretrieved citations, fails closed when necessary, and renders exact Quran evidence from trusted stored fields.</p>
         </article>
         <article class="module-card">
           <code>service.py</code><h3>Application orchestrator</h3>
@@ -800,10 +805,10 @@ quran-ra chat</code></pre>
               <li>Reasoning (AI explanation)</li>
               <li>Confidence</li>
             </ol>
-            <p>Every retrieved evidence block includes its reference, surah name, Arabic, English translation, and retrieval score. Temperature is set to zero to reduce variation.</p>
+            <p>Every retrieved evidence block includes its reference, surah name, Arabic, English translation, and retrieval score. Temperature is set to zero and generation is bounded to reduce variation and excessive output.</p>
             <p>If no candidates exist or the best score is below <code>QRA_MINIMUM_RELEVANCE</code>, the service returns:</p>
             <div class="callout"><strong>I could not find sufficient Quranic evidence to confidently answer this question.</strong></div>
-            <div class="callout warning"><strong>Current V1 behavior:</strong> grounding is enforced by prompting, but generated citations and quoted text are not yet programmatically validated. Deterministic rendering and citation allowlisting are planned before acceptance release.</div>
+            <div class="callout"><strong>Grounding enforcement:</strong> the model returns structured AI claims rather than the final document. Pydantic validates the schema, every citation must belong to retrieved evidence, and the application renders Arabic and translation fields directly from stored verses. Malformed or unauthorized output returns the insufficient-evidence message.</div>
           </div>
         </details>
 
@@ -855,6 +860,7 @@ python -m build</code></pre>
                   <tr><td><code>test_loader.py</code></td><td>Common aliases and duplicate-reference rejection.</td></tr>
                   <tr><td><code>test_quranlab.py</code></td><td>Incomplete and duplicate QuranLab edition rejection.</td></tr>
                   <tr><td><code>test_retrieval.py</code></td><td>Basic lexical relevance behavior.</td></tr>
+                  <tr><td><code>test_generation.py</code></td><td>Structured output, citation allowlisting, exact evidence rendering, and fail-closed behavior.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -888,7 +894,7 @@ quran-ra doctor</code></pre>
           <summary>Current V1 limitations and planned hardening</summary>
           <div class="detail-body">
             <ul>
-              <li><strong>Grounding:</strong> evidence-only behavior is currently prompt-based; citations and copied Quran text need deterministic validation.</li>
+              <li><strong>Explanation support:</strong> the application guarantees real retrieved citations and exact stored Quran text, but software cannot fully prove that every AI explanation correctly interprets its cited evidence.</li>
               <li><strong>Hybrid search:</strong> lexical scoring currently reranks only semantic candidates; independent full-corpus BM25 is planned.</li>
               <li><strong>Exhaustive questions:</strong> default output is eight verses, so “show every verse” is not yet a true exhaustive mode.</li>
               <li><strong>Confidence:</strong> the current threshold is a configurable heuristic and still needs calibration against reviewed questions.</li>
@@ -897,7 +903,7 @@ quran-ra doctor</code></pre>
               <li><strong>Translation:</strong> Pickthall is public domain but uses older English; multiple translations are intentionally deferred.</li>
               <li><strong>Transliteration:</strong> the selected QuranLab configurations do not supply it.</li>
             </ul>
-            <p>Planned order: deterministic output → true hybrid retrieval → reviewed regression set → calibrated confidence → index fingerprints → expanded acceptance tests.</p>
+            <p>Planned order: true hybrid retrieval → reviewed regression set → calibrated confidence → index fingerprints → expanded acceptance tests.</p>
           </div>
         </details>
 
