@@ -1,0 +1,359 @@
+# Project Name
+
+Quran Research Assistant (Version 1)
+
+# Objective
+
+Build a production-quality local Retrieval-Augmented Generation (RAG) application that allows a user to ask natural-language questions about the Quran and receive accurate, citation-backed answers.
+
+The assistant is NOT intended to be an Islamic authority.
+
+Its responsibility is to locate relevant verses, explain why they are relevant, and always cite its sources.
+
+The application should never invent verses or answer from the language model's memory alone.
+
+Every factual statement must be supported by retrieved Quran verses.
+
+------------------------------------------------------------
+
+# Primary Goal
+
+Allow the user to type questions like:
+
+"Where does the Quran discuss free will?"
+
+"Does the Quran tell Muslims to ask Jews if they are confused?"
+
+"Show every verse about patience."
+
+"What does the Quran say about mercy?"
+
+"Where is Moses mentioned?"
+
+The assistant should understand the intent behind the question, search the Quran intelligently, retrieve relevant verses, rank them by relevance, and generate a clear explanation supported by citations.
+
+------------------------------------------------------------
+
+# Functional Requirements
+
+The application must:
+
+✓ Run entirely locally.
+
+✓ Use Ollama as the LLM backend.
+
+✓ Use ChromaDB as the vector database.
+
+✓ Use a local embedding model
+(BAAI/bge-small-en-v1.5 or nomic-embed-text preferred).
+
+✓ Index every Quran verse individually.
+
+Each indexed verse should include metadata:
+
+- Surah number
+- Surah name
+- Ayah number
+- Arabic text
+- English translation
+- Transliteration (if available)
+- Juz
+- Revelation type (if available)
+
+------------------------------------------------------------
+
+# Retrieval Pipeline
+
+Every user query must follow this pipeline:
+
+1. Receive natural language question.
+
+2. Convert question into embeddings.
+
+3. Search ChromaDB.
+
+4. Retrieve top relevant verses.
+
+5. Rank retrieved verses.
+
+6. Send ONLY the retrieved verses to the LLM.
+
+7. Generate an explanation based ONLY on those retrieved verses.
+
+The LLM must never answer using hidden knowledge.
+
+------------------------------------------------------------
+
+# Required Output Format
+
+Every answer should contain:
+
+---------------------------------
+
+Question
+
+---------------------------------
+
+Summary Answer
+
+A concise answer.
+
+---------------------------------
+
+Primary Evidence
+
+Surah
+
+Ayah
+
+Arabic
+
+Translation
+
+---------------------------------
+
+Additional Relevant Verses
+
+List all other relevant verses.
+
+---------------------------------
+
+Reasoning
+
+Explain why these verses answer the question.
+
+Clearly distinguish
+
+- Direct Quran text
+- AI explanation
+
+---------------------------------
+
+Confidence
+
+High
+
+Medium
+
+Low
+
+based on retrieval quality.
+
+------------------------------------------------------------
+
+# Hallucination Rules
+
+Never invent
+
+- verses
+
+- citations
+
+- surah names
+
+- ayah numbers
+
+If evidence is insufficient, say:
+
+"I could not find sufficient Quranic evidence to confidently answer this question."
+
+------------------------------------------------------------
+
+# Search Capabilities
+
+The assistant must support:
+
+Semantic search
+
+Keyword search
+
+Concept search
+
+Example:
+
+Query:
+
+"Why do bad things happen to good people?"
+
+Should retrieve concepts like
+
+- trials
+
+- patience
+
+- suffering
+
+- wisdom
+
+- decree
+
+even if those exact words are absent.
+
+------------------------------------------------------------
+
+# CLI Interface
+
+The application should begin as a terminal application.
+
+Example
+
+> Ask:
+
+Does the Quran say humans have free will?
+
+Response:
+
+Summary
+
+...
+
+Primary Verse
+
+2:256
+
+...
+
+Related Verses
+
+...
+
+Reasoning
+
+...
+
+Confidence
+
+High
+
+------------------------------------------------------------
+
+# Project Structure
+
+Create a clean, modular architecture.
+
+project/
+
+    data/
+
+    ingestion/
+
+    embeddings/
+
+    vector_store/
+
+    retrieval/
+
+    llm/
+
+    cli/
+
+    config/
+
+    utils/
+
+    tests/
+
+------------------------------------------------------------
+
+# Configuration
+
+All configuration values should be stored separately.
+
+Examples:
+
+Model name
+
+Embedding model
+
+Vector database path
+
+Quran dataset path
+
+Chunk size
+
+Top K retrieval
+
+------------------------------------------------------------
+
+# Code Quality
+
+Use
+
+Python 3.12+
+
+Type hints
+
+Docstrings
+
+Logging
+
+Error handling
+
+Unit tests where appropriate
+
+Readable architecture
+
+No duplicated code
+
+------------------------------------------------------------
+
+# Future Extensibility
+
+Design Version 1 so future modules can be added without major refactoring.
+
+Future modules include:
+
+- Multiple translations
+
+- Tafsir
+
+- Hadith
+
+- Scholar comparison
+
+- Arabic root analysis
+
+- Notes
+
+- Bookmarks
+
+- Web UI
+
+Do NOT implement these yet.
+
+Only prepare the architecture.
+
+------------------------------------------------------------
+
+# Success Criteria
+
+A user can ask any question about the Quran.
+
+The assistant retrieves the most relevant verses.
+
+The assistant explains why those verses are relevant.
+
+Every factual statement is supported by Quran citations.
+
+No hallucinated verses or citations are produced.
+
+The application is modular, maintainable, and ready for future expansion.
+
+The architecture should be:
+User Question
+      │
+      ▼
+Query Analyzer
+      │
+      ▼
+Retriever (ChromaDB)
+      │
+      ▼
+Relevant Quran Verses
+      │
+      ▼
+LLM (explanation only)
+      │
+      ▼
+Final Answer
+
